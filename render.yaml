@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: shegerkurt
+    env: docker
+    region: ohio
+    plan: free
+    branch: main

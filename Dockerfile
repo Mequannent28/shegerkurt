@@ -1,18 +1,28 @@
 FROM php:8.2-apache
 
-# Install MySQL extensions for PHP
+# Install database extensions
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# Enable Apache mod_rewrite for nice URLs
+# Enable mod_rewrite
 RUN a2enmod rewrite
 
-# Configure Apache to use the $PORT environment variable provided by Render
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-
-# Copy all the project files into the Apache document root
+# Copy project files
 COPY . /var/www/html/
 
-# Fix permissions
+# Secure permissions
 RUN chown -R www-data:www-data /var/www/html
 
+# Create a startup script to dynamically configure the Render PORT
+RUN echo '#!/bin/bash\n\
+if [ -z "$PORT" ]; then\n\
+  PORT=80\n\
+fi\n\
+sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf\n\
+echo "ServerName localhost" >> /etc/apache2/apache2.conf\n\
+source /etc/apache2/envvars\n\
+exec apache2 -D FOREGROUND\n\
+' > /usr/local/bin/start.sh
+
+RUN chmod +x /usr/local/bin/start.sh
+
+CMD ["/usr/local/bin/start.sh"]

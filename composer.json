@@ -1,0 +1,7 @@
+{
+    "name": "muluken/sheger-kurt",
+    "description": "Sheger Kurt Bar & Restaurant Management System",
+    "require": {
+        "php": "^8.0"
+    }
+}
